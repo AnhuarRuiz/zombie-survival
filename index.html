@@ -138,9 +138,6 @@
       <div id="hptext"><span class="ci">❤</span><b id="hpnum">100</b></div>
     </div>
     <div id="statChips">
-      <div class="chip"><span class="ci">🌊</span><b id="wave">1</b></div>
-      <div class="chip"><span class="ci">👹</span><b id="left">0</b></div>
-      <div class="chip"><span class="ci">💀</span><b id="kills">0</b></div>
       <div class="chip gold"><span class="ci">💰</span><b id="coins">0</b></div>
     </div>
   </div>
@@ -718,8 +715,6 @@ function updateHUD(){
   const p=G.player;
   document.getElementById('hpbar').style.width=clamp(p.hp/p.maxhp*100,0,100)+'%';
   document.getElementById('hpnum').textContent=Math.ceil(Math.max(0,p.hp));
-  document.getElementById('wave').textContent=G.wave;
-  document.getElementById('kills').textContent=G.kills;
   document.getElementById('coins').textContent=G.coinCount;
   updateWeaponHUD();
   updateWeaponBtns();
@@ -861,7 +856,6 @@ function update(dt){
   if(G.shake>0)G.shake-=dt*0.8;
 
   // wave end check / reposo entre oleadas
-  document.getElementById('left').textContent=G.resting?Math.max(0,Math.ceil(G.rest/1000))+'s':(G.zombies.length+G.spawnQueue);
   if(G.resting){
     G.rest-=dt*16.67;
     const secs=Math.ceil(G.rest/1000);
