@@ -68,6 +68,12 @@
   .abtn:active { background:rgba(124,252,0,.4); color:#062600; transform:scale(.94); }
   .abtn.dodge { border-color:rgba(90,200,255,.5); }
   .abtn.dodge:active { background:rgba(90,200,255,.45); }
+  #fireBtn {
+    position:absolute; bottom:calc(72px*var(--ui)); right:calc(20px*var(--ui));
+    width:calc(86px*var(--ui)); height:calc(86px*var(--ui)); font-size:calc(34px*var(--ui));
+    background:rgba(60,20,16,.5); border-color:rgba(255,90,70,.6);
+  }
+  #fireBtn:active, #fireBtn.held { background:rgba(255,70,50,.5); color:#fff; transform:scale(.94); }
   #weaponBtns { position:absolute; bottom:calc(12px*var(--ui)); left:50%; transform:translateX(-50%); display:flex; gap:calc(7px*var(--ui)); flex-wrap:wrap; justify-content:center; max-width:80%; }
   .wbtn {
     pointer-events:auto; min-width:calc(50px*var(--ui)); height:calc(38px*var(--ui)); padding:calc(3px*var(--ui)) calc(7px*var(--ui)); border-radius:calc(9px*var(--ui)); font-size:calc(11px*var(--ui)); font-weight:800;
@@ -107,6 +113,7 @@
     <button id="dodgeBtn" class="abtn dodge" title="Esquivar">»</button>
     <button id="reloadBtn" class="abtn" title="Recargar">⟳</button>
   </div>
+  <button id="fireBtn" class="abtn fire" title="Disparar">🔫</button>
   <div id="weaponBtns"></div>
 </div>
 
@@ -123,7 +130,7 @@
     <div class="key"><b>R</b> — Recargar</div>
     <div class="key"><b>Espacio</b> — Esquive</div>
   </div>
-  <p class="sub touchHint">🕹️ <b>Pulgar izquierdo</b> para moverte · 🎯 <b>Pulgar derecho</b> para apuntar y disparar · Botones para esquivar, recargar y cambiar de arma.</p>
+  <p class="sub touchHint">🕹️ <b>Pulgar izquierdo</b> para caminar · 🎯 <b>Arrastra a la derecha</b> para mover la mirada · 🔫 <b>Botón</b> para disparar cuando quieras · Botones para esquivar, recargar y cambiar de arma.</p>
   <div class="credit">Hecho con HTML5 Canvas · Sin instalación</div>
 </div>
 
@@ -414,15 +421,16 @@ const DEAD=0.18;
 // move stick (left thumb) + aim stick (right thumb). kx/ky = knob position for drawing.
 const Tctrl={
   move:{id:null,bx:0,by:0,kx:0,ky:0,dx:0,dy:0},
-  aim:{id:null,bx:0,by:0,kx:0,ky:0,ang:0,fire:false},
+  aim:{id:null,bx:0,by:0,kx:0,ky:0,ang:0},
+  fire:false,
 };
-function resetTctrl(){ Tctrl.move.id=null; Tctrl.move.dx=Tctrl.move.dy=0; Tctrl.aim.id=null; Tctrl.aim.fire=false; }
+function resetTctrl(){ Tctrl.move.id=null; Tctrl.move.dx=Tctrl.move.dy=0; Tctrl.aim.id=null; Tctrl.fire=false; setFireBtn(false); }
 cv.addEventListener('touchstart',e=>{
   e.preventDefault(); actx();
   for(const t of e.changedTouches){
     const x=t.clientX,y=t.clientY;
     if(x<W*0.5){ if(Tctrl.move.id===null){ Tctrl.move.id=t.identifier; Tctrl.move.bx=Tctrl.move.kx=x; Tctrl.move.by=Tctrl.move.ky=y; Tctrl.move.dx=Tctrl.move.dy=0; } }
-    else { if(Tctrl.aim.id===null){ Tctrl.aim.id=t.identifier; Tctrl.aim.bx=Tctrl.aim.kx=x; Tctrl.aim.by=Tctrl.aim.ky=y; Tctrl.aim.fire=false; } }
+    else { if(Tctrl.aim.id===null){ Tctrl.aim.id=t.identifier; Tctrl.aim.bx=Tctrl.aim.kx=x; Tctrl.aim.by=Tctrl.aim.ky=y; } }
   }
 },{passive:false});
 cv.addEventListener('touchmove',e=>{
@@ -438,9 +446,8 @@ cv.addEventListener('touchmove',e=>{
     } else if(t.identifier===Tctrl.aim.id){
       let dx=x-Tctrl.aim.bx, dy=y-Tctrl.aim.by, l=Math.hypot(dx,dy);
       if(l>STICK_R){ Tctrl.aim.bx+=dx-dx/l*STICK_R; Tctrl.aim.by+=dy-dy/l*STICK_R; dx=dx/l*STICK_R; dy=dy/l*STICK_R; l=STICK_R; }
-      // small nudges rotate the aim; firing only kicks in past a clear push (decoupled aim vs shoot)
+      // dragging on the right side only moves the aim; firing is a separate button
       if(l>6) Tctrl.aim.ang=Math.atan2(dy,dx);
-      Tctrl.aim.fire = l>STICK_R*0.32;
       Tctrl.aim.kx=Tctrl.aim.bx+dx; Tctrl.aim.ky=Tctrl.aim.by+dy;
     }
   }
@@ -449,7 +456,7 @@ function touchEnd(e){
   e.preventDefault();
   for(const t of e.changedTouches){
     if(t.identifier===Tctrl.move.id){ Tctrl.move.id=null; Tctrl.move.dx=Tctrl.move.dy=0; }
-    if(t.identifier===Tctrl.aim.id){ Tctrl.aim.id=null; Tctrl.aim.fire=false; }
+    if(t.identifier===Tctrl.aim.id){ Tctrl.aim.id=null; }
   }
 }
 cv.addEventListener('touchend',touchEnd,{passive:false});
@@ -458,6 +465,11 @@ cv.addEventListener('touchcancel',touchEnd,{passive:false});
 function bindBtn(el,fn){ el.addEventListener('pointerdown',ev=>{ev.preventDefault();ev.stopPropagation();actx();if(G&&!G.over)fn();},{passive:false}); }
 bindBtn(document.getElementById('dodgeBtn'),()=>doDodge());
 bindBtn(document.getElementById('reloadBtn'),()=>reload());
+// fire button — hold to keep firing (decoupled from aiming)
+const fireBtnEl=document.getElementById('fireBtn');
+function setFireBtn(on){ Tctrl.fire=on; fireBtnEl.classList.toggle('held',on); }
+fireBtnEl.addEventListener('pointerdown',e=>{ e.preventDefault(); e.stopPropagation(); actx(); if(G&&!G.over) setFireBtn(true); },{passive:false});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>fireBtnEl.addEventListener(ev,e=>{ e.preventDefault(); setFireBtn(false); },{passive:false}));
 function updateWeaponBtns(){
   if(!isTouch) return;
   const cont=document.getElementById('weaponBtns');
@@ -644,7 +656,7 @@ function update(dt){
   if(p.inv>0)p.inv-=dt*16.67; if(p.dodgeCD>0)p.dodgeCD-=dt*16.67;
   // shooting
   const wp=WEAPONS[G.weapon];
-  const wantFire=G.mouse.down||Tctrl.aim.fire;
+  const wantFire=G.mouse.down||Tctrl.fire;
   if(wantFire){ if(wp.auto||!G.fired){ shoot(); G.fired=true; } }
   else G.fired=false;
   // reload progress
