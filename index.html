@@ -431,14 +431,17 @@ cv.addEventListener('touchmove',e=>{
     const x=t.clientX,y=t.clientY;
     if(t.identifier===Tctrl.move.id){
       let dx=x-Tctrl.move.bx, dy=y-Tctrl.move.by, l=Math.hypot(dx,dy);
-      if(l>STICK_R){ dx=dx/l*STICK_R; dy=dy/l*STICK_R; }
+      // floating stick: the base trails the thumb so the knob stays within reach
+      if(l>STICK_R){ Tctrl.move.bx+=dx-dx/l*STICK_R; Tctrl.move.by+=dy-dy/l*STICK_R; dx=dx/l*STICK_R; dy=dy/l*STICK_R; l=STICK_R; }
       Tctrl.move.kx=Tctrl.move.bx+dx; Tctrl.move.ky=Tctrl.move.by+dy;
       Tctrl.move.dx=dx/STICK_R; Tctrl.move.dy=dy/STICK_R;
     } else if(t.identifier===Tctrl.aim.id){
       let dx=x-Tctrl.aim.bx, dy=y-Tctrl.aim.by, l=Math.hypot(dx,dy);
-      if(l>10){ Tctrl.aim.ang=Math.atan2(dy,dx); Tctrl.aim.fire=true; } else Tctrl.aim.fire=false;
-      let cx=dx,cy=dy; if(l>STICK_R){ cx=dx/l*STICK_R; cy=dy/l*STICK_R; }
-      Tctrl.aim.kx=Tctrl.aim.bx+cx; Tctrl.aim.ky=Tctrl.aim.by+cy;
+      if(l>STICK_R){ Tctrl.aim.bx+=dx-dx/l*STICK_R; Tctrl.aim.by+=dy-dy/l*STICK_R; dx=dx/l*STICK_R; dy=dy/l*STICK_R; l=STICK_R; }
+      // small nudges rotate the aim; firing only kicks in past a clear push (decoupled aim vs shoot)
+      if(l>6) Tctrl.aim.ang=Math.atan2(dy,dx);
+      Tctrl.aim.fire = l>STICK_R*0.32;
+      Tctrl.aim.kx=Tctrl.aim.bx+dx; Tctrl.aim.ky=Tctrl.aim.by+dy;
     }
   }
 },{passive:false});
@@ -619,9 +622,9 @@ function loop(now){
 }
 function update(dt){
   const p=G.player; G.time+=dt;
-  // aim — touch aim stick overrides mouse
+  // aim — touch aim stick overrides mouse; on touch we keep the last angle when the thumb lifts
   if(Tctrl.aim.id!==null) p.ang=Tctrl.aim.ang;
-  else p.ang=Math.atan2(G.mouse.y-p.y,G.mouse.x-p.x);
+  else if(!isTouch) p.ang=Math.atan2(G.mouse.y-p.y,G.mouse.x-p.x);
   // movement
   p.moving=false;
   if(p.dodge>0){ p.x+=p.dx*dt; p.y+=p.dy*dt; p.dodge-=dt; p.moving=true; p.legPhase+=dt*0.9; }
@@ -630,7 +633,11 @@ function update(dt){
     if(Tctrl.move.id!==null){ mx=Tctrl.move.dx; my=Tctrl.move.dy; }
     else { mx=(G.keys.right?1:0)-(G.keys.left?1:0); my=(G.keys.down?1:0)-(G.keys.up?1:0); }
     let l=Math.hypot(mx,my); if(l>1){ mx/=l; my/=l; l=1; }
-    if(l>DEAD){ p.x+=mx*p.speed*dt; p.y+=my*p.speed*dt; p.moving=true; p.legPhase+=dt*0.45; }
+    if(l>DEAD){
+      // rescale past the dead zone so movement feels crisp instead of mushy near center
+      const m=(l-DEAD)/(1-DEAD);
+      p.x+=(mx/l)*p.speed*m*dt; p.y+=(my/l)*p.speed*m*dt; p.moving=true; p.legPhase+=dt*0.45;
+    }
   }
   p.x=clamp(p.x,p.r,W-p.r); p.y=clamp(p.y,p.r,H-p.r);
   if(p.recoil>0)p.recoil-=dt; if(G.muzzle>0)G.muzzle-=dt;
