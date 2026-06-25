@@ -454,6 +454,7 @@ function newGame(){
     weapon:'pistol',ammo:{},reloading:0,lastShot:0,muzzle:0,
     wave:0,kills:0,coinsTotal:0,coinCount:0,
     spawnQueue:0,spawnTimer:0,alive:0,waveActive:false,resting:false,rest:0,lastRestSec:0,
+    waveTotal:0,waveKilled:0,   // zombies in the current wave (kill them all → next wave)
     mult:{dmg:1,speed:1,fireRate:1,coin:1},
     up:{maxhp:0,dmg:0,fire:0,speed:0,coin:0},
     shake:0,time:0,over:false,
@@ -665,6 +666,7 @@ function startWave(){
   G.wave++;
   G.spawnQueue=Math.floor(6+G.wave*3.2);
   G.spawnTimer=0; G.waveActive=true; G.alive=G.spawnQueue;
+  G.waveTotal=G.spawnQueue; G.waveKilled=0;   // reset per-wave kill counter
   showMsg('OLEADA '+G.wave); SFX.wave();
   updateHUD();
 }
@@ -869,7 +871,7 @@ function update(dt){
 }
 
 function killZombie(z){
-  G.kills++; G.alive--; SFX.zdeath(); G.shake=Math.min(G.shake+4,14);
+  G.kills++; G.waveKilled++; G.alive--; SFX.zdeath(); G.shake=Math.min(G.shake+4,14);
   spawnBlood(z.x,z.y,0,0,18+z.r);
   // big death pool + flying gibs
   G.pools.push({x:z.x,y:z.y,r:z.r*rand(1.3,1.8),c:'#5e0d0d',a:.5});
@@ -994,19 +996,20 @@ function render(){
   ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
   if(G && G.player.hp/G.player.maxhp<0.35){ ctx.fillStyle='rgba(180,0,0,'+(0.16+Math.sin(G.time*0.2)*0.06)+')'; ctx.fillRect(0,0,W,H); }
 
-  // ---- MINIMAP (which zone of the map you're in) ----
+  // ---- WAVE COUNTER (top-center): wave number + zombies killed / total this wave ----
   if(G && !G.over){
-    const s=Math.round(11*UISCALE), gap=Math.round(3*UISCALE);
-    const mw=GW*s+(GW-1)*gap, x0=(W-mw)/2, y0=Math.round(10*UISCALE);
+    const cx=W/2, y0=Math.round(12*UISCALE);
     ctx.save();
-    for(let yy=0;yy<GH;yy++)for(let xx=0;xx<GW;xx++){
-      const cx=x0+xx*(s+gap), cy=y0+yy*(s+gap), cur=(xx===G.zone.cx&&yy===G.zone.cy);
-      ctx.globalAlpha=cur?0.95:0.5;
-      ctx.fillStyle=cur?'rgba(124,252,0,0.85)':'rgba(14,18,13,0.55)';
-      ctx.fillRect(cx,cy,s,s);
-      ctx.globalAlpha=0.8; ctx.lineWidth=1; ctx.strokeStyle='rgba(120,180,80,0.45)';
-      ctx.strokeRect(cx+0.5,cy+0.5,s,s);
-    }
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.shadowColor='rgba(0,0,0,0.75)'; ctx.shadowBlur=6;
+    ctx.fillStyle='#7CFC00';
+    ctx.font='800 '+Math.round(22*UISCALE)+'px "Segoe UI",system-ui,sans-serif';
+    ctx.fillText('OLEADA '+G.wave, cx, y0);
+    // killed / total → kill them all to advance to the next wave
+    const done=G.waveKilled>=G.waveTotal;
+    ctx.fillStyle=done?'#ffcf33':'#e8ffe8';
+    ctx.font='800 '+Math.round(15*UISCALE)+'px "Segoe UI",system-ui,sans-serif';
+    ctx.fillText('💀 '+G.waveKilled+' / '+G.waveTotal, cx, y0+Math.round(26*UISCALE));
     ctx.restore(); ctx.globalAlpha=1;
   }
 }
