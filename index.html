@@ -211,19 +211,26 @@
     .mbtn { padding:12px 16px; font-size:16px; }
     .mbtn .ic { font-size:18px; width:22px; }
     .menuHint { font-size:11px; }
-    .card { padding:12px; }
-    .card .t { font-size:15px; }
+    .card { padding:10px; gap:4px; }
+    .card .t { font-size:14px; }
     .card .d { font-size:12px; }
+    .card .c { font-size:13px; }
     .slot { min-width:138px; padding:10px 14px; }
     .slot canvas { width:104px; height:40px; }
     .slot .emoji { font-size:28px; line-height:40px; }
     .catBtn { padding:18px 12px; }
     .catBtn .ic { font-size:32px; }
-    .wcard canvas { width:124px; height:46px; }
+    /* shop grid: more, narrower cards; tighter previews & stats; drop the long descriptions */
+    #shopView { gap:10px; max-width:760px; }
+    .shopGrid { grid-template-columns:repeat(auto-fit,minmax(146px,1fr)); gap:8px; }
+    .wcard canvas { width:96px; height:36px; margin:0 auto; }
+    .wcard .stats { font-size:11px; gap:1px; }
+    .wcard .note { display:none; }
     .tab { font-size:12px; padding:9px 6px; }
     .tab .ic { font-size:15px; }
     .shopHead h2 { font-size:20px; }
     .shopCoins { font-size:16px; padding:6px 12px; }
+    .loadMini { font-size:12px; }
     .setRow { padding:11px 14px; font-size:14px; }
     .credit { font-size:11px; }
   }
