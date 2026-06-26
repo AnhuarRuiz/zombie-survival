@@ -131,15 +131,15 @@
     box-shadow:0 3px 12px rgba(0,0,0,.5); }
   .closeX:hover { border-color:var(--accent-bright); background:rgba(74,16,16,.92); color:#fff; transform:scale(1.06); }
   .closeX:active { transform:scale(.94); }
-  /* mobile pause button (top-center, above the wave message) */
-  #pauseBtn { position:absolute; z-index:6; top:calc(10px*var(--ui) + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
+  /* mobile pause button (top-right corner, clear of the centered wave counter) */
+  #pauseBtn { position:absolute; z-index:6; top:calc(10px*var(--ui) + env(safe-area-inset-top)); right:calc(12px*var(--ui) + env(safe-area-inset-right));
     width:calc(42px*var(--ui)); height:calc(42px*var(--ui)); border-radius:50%; display:none; align-items:center; justify-content:center;
     font-size:calc(13px*var(--ui)); font-weight:900; letter-spacing:1px; color:#ffe0da; background:rgba(30,12,12,.6);
     border:1px solid rgba(200,80,70,.5); backdrop-filter:blur(3px); box-shadow:0 3px 12px rgba(0,0,0,.45);
     user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; }
   body.touch #pauseBtn { display:flex; }
   #pauseBtn.hidden { display:none !important; }
-  #pauseBtn:active { background:rgba(226,59,59,.5); color:#fff; transform:translateX(-50%) scale(.92); }
+  #pauseBtn:active { background:rgba(226,59,59,.5); color:#fff; transform:scale(.92); }
   /* ---------- MINIMAL HUD (top-left stats) ---------- */
   #hud { position:absolute; top:calc(12px*var(--ui)); left:calc(12px*var(--ui)); right:calc(12px*var(--ui)); z-index:5; pointer-events:none; display:flex; }
   #hudTop { display:flex; flex-direction:column; gap:calc(7px*var(--ui)); }
@@ -187,13 +187,54 @@
   #whReload.hidden { display:none !important; }
   #whReload i { position:absolute; left:0; top:0; bottom:0; width:0; background:linear-gradient(90deg,#5ec8ff,#22a0ff); }
   #whReload span { position:relative; font-size:calc(6px*var(--ui)); font-weight:800; letter-spacing:.5px; color:#eaf7ff; }
-  body.touch #weaponHUD { bottom:auto; top:calc(44px*var(--ui)); }
+  body.touch #weaponHUD { bottom:auto; top:calc(60px*var(--ui)); }   /* clear the pause button in the top-right corner */
   #msg { position:absolute; top:64px; left:0; right:0; text-align:center; z-index:6; font-size:clamp(14px,2.4vw,22px); font-weight:800;
     color:var(--gold); text-shadow:0 0 12px rgba(0,0,0,.8); pointer-events:none; opacity:0; transition:opacity .3s; letter-spacing:1px; }
   #msg.show { opacity:1; }
   .credit { font-size:12px; opacity:.5; position:absolute; bottom:10px; }
   .overlay { overflow-y:auto; }
   @media (max-width:600px){ .key{display:none} }
+  /* ---------- COMPACT MENUS for phones / short (landscape) viewports ---------- */
+  /* the HUD & touch sticks already scale via --ui; these overlay menus use fixed px,
+     so shrink their type & spacing here so they fit & read well on small screens. */
+  @media (max-width:760px), (max-height:540px){
+    .overlay { gap:12px; padding:16px; }
+    h1 { font-size:clamp(26px,6vw,46px); }
+    h2 { font-size:clamp(18px,4.4vw,26px); }
+    p.sub { font-size:13px; line-height:1.4; }
+    .btn { padding:11px 24px; font-size:16px; }
+    .btn.small { padding:9px 18px; font-size:14px; }
+    #start.menu { padding:20px clamp(20px,6vw,80px); }
+    .brand .tag { letter-spacing:2px; font-size:10px; }
+    .menuWrap { gap:18px; }
+    .menuBtns { gap:10px; }
+    .mbtn { padding:12px 16px; font-size:16px; }
+    .mbtn .ic { font-size:18px; width:22px; }
+    .menuHint { font-size:11px; }
+    .card { padding:12px; }
+    .card .t { font-size:15px; }
+    .card .d { font-size:12px; }
+    .slot { min-width:138px; padding:10px 14px; }
+    .slot canvas { width:104px; height:40px; }
+    .slot .emoji { font-size:28px; line-height:40px; }
+    .catBtn { padding:18px 12px; }
+    .catBtn .ic { font-size:32px; }
+    .wcard canvas { width:124px; height:46px; }
+    .tab { font-size:12px; padding:9px 6px; }
+    .tab .ic { font-size:15px; }
+    .shopHead h2 { font-size:20px; }
+    .shopCoins { font-size:16px; padding:6px 12px; }
+    .setRow { padding:11px 14px; font-size:14px; }
+    .credit { font-size:11px; }
+  }
+  /* very short landscape phones: trim a little more vertical bulk */
+  @media (max-height:430px){
+    .overlay { gap:9px; padding:12px; }
+    h1 { font-size:clamp(22px,5.4vh,38px); }
+    .menuWrap { gap:12px; }
+    .mbtn { padding:10px 14px; }
+    .btn { padding:9px 20px; }
+  }
 
   /* ---------- TOUCH CONTROLS (mobile) ---------- */
   .touchHint { display:none; }
@@ -355,6 +396,11 @@ const RS_MIN=0.55, RS_MAX=1;
 // the adaptive loop refines it from here. (≈ >2.6 MP → start at 0.75)
 let RSCALE=(window.innerWidth*window.innerHeight>2600000)?0.75:1;
 let UISCALE=1, STICK_R=58;   // UI scale factor & joystick radius, both adapt to screen size
+// VIEW = world render scale (camera zoom). The world is a fixed virtual zone of VW×VH world
+// units, drawn scaled by VIEW to fill the W×H screen. On small screens VIEW<1 so the zone is
+// larger than the screen → entities look smaller and more of the area is visible (zooms OUT).
+// On desktop VIEW stays 1, so VW==W / VH==H and nothing changes.
+let VIEW=1, VW=0, VH=0;
 // ---- WORLD MAP (grid of screen-sized zones; cross an edge → move to the next zone) ----
 const GW=5, GH=5;            // map is GW×GH zones (each zone = one screen)
 let groundSeed=1;            // seed for the current zone's ground (so each zone looks distinct & stable)
@@ -380,6 +426,9 @@ function resize(){
   // the shorter side drives the scale so it works in any orientation.
   const minDim=Math.min(W,H);
   UISCALE=clamp(minDim/460,0.55,1);
+  // zoom the world out on small screens (shorter side < 620 → VIEW<1). Desktop stays at 1.
+  VIEW=clamp(minDim/620,0.55,1);
+  VW=Math.ceil(W/VIEW); VH=Math.ceil(H/VIEW);   // ceil so the world always fully covers the screen
   STICK_R=Math.round(clamp(minDim*0.13,38,62));
   document.documentElement.style.setProperty('--ui',UISCALE.toFixed(3));
   document.documentElement.style.setProperty('--stick-r',STICK_R+'px');
@@ -397,6 +446,7 @@ function patch(c,x,y,r,col,a){ const n=6+(Math.random()*5|0); for(let i=0;i<n;i+
 
 // Pre-render a detailed, textured, organic ground once (perf + quality)
 function prerenderGround(){
+  const W=VW, H=VH;   // the ground covers the full virtual zone, not just the visible screen
   const _realRandom=Math.random; Math.random=mulberry32(groundSeed||1);  // seed → each zone has a stable, distinct look
   groundCv.width=W; groundCv.height=H;
   // base dirt gradient
@@ -758,10 +808,10 @@ buildGlows();   // pre-render glow/coin/eye textures (needs WEAPONS colors → b
 let G;
 function newGame(){
   G={
-    player:{x:W/2,y:H/2,r:16,speed:3.4,hp:100,maxhp:100,inv:0,dodgeCD:0,dodge:0,dx:0,dy:0,vx:0,vy:0,ang:0,legPhase:0,moving:false,recoil:0,meleeCD:0,swing:0},
+    player:{x:VW/2,y:VH/2,r:16,speed:3.4,hp:100,maxhp:100,inv:0,dodgeCD:0,dodge:0,dx:0,dy:0,vx:0,vy:0,ang:0,legPhase:0,moving:false,recoil:0,meleeCD:0,swing:0},
     bullets:[],zombies:[],parts:[],coins:[],drops:[],pops:[],blood:[],pools:[],casings:[],smoke:[],
     nades:[],fields:[],fx:[],   // granadas en vuelo · zonas (fuego/gas/hielo) · destellos de explosión
-    keys:{},mouse:{x:W/2,y:H/2,down:false},
+    keys:{},mouse:{x:VW/2,y:VH/2,down:false},
     weapon:'pistol',melee:'knife',activeSlot:'firearm',ammo:{},reloading:0,lastShot:0,muzzle:0,
     grenades:{},grenade:'frag',nadeCD:0,
     wave:0,kills:0,coinsTotal:0,coinCount:0,
@@ -796,7 +846,7 @@ window.addEventListener('keydown',e=>{
   if(e.code==='KeyQ') cycleGrenade();         // Q → cambiar de granada
 });
 window.addEventListener('keyup',e=>{ if(G&&keymap[e.code]) G.keys[keymap[e.code]]=false; });
-cv.addEventListener('mousemove',e=>{ if(G){G.mouse.x=e.clientX;G.mouse.y=e.clientY;} });
+cv.addEventListener('mousemove',e=>{ if(G){G.mouse.x=e.clientX/VIEW;G.mouse.y=e.clientY/VIEW;} });   // screen → world coords
 cv.addEventListener('mousedown',e=>{ actx(); if(G){G.mouse.down=true;} });
 window.addEventListener('mouseup',()=>{ if(G)G.mouse.down=false; });
 //============================================================ TOUCH CONTROLS (fixed twin-stick)
@@ -1014,8 +1064,8 @@ const ZT={
 // place an entity just off a random screen edge (used for spawns & when zombies chase you into a new zone)
 function placeAtEdge(o){
   const m=40, edge=(Math.random()*4)|0;
-  if(edge===0){o.x=rand(-m,W+m);o.y=-m;} else if(edge===1){o.x=W+m;o.y=rand(-m,H+m);}
-  else if(edge===2){o.x=rand(-m,W+m);o.y=H+m;} else {o.x=-m;o.y=rand(-m,H+m);}
+  if(edge===0){o.x=rand(-m,VW+m);o.y=-m;} else if(edge===1){o.x=VW+m;o.y=rand(-m,VH+m);}
+  else if(edge===2){o.x=rand(-m,VW+m);o.y=VH+m;} else {o.x=-m;o.y=rand(-m,VH+m);}
 }
 function spawnZombie(wave){
   const t=zombieType(wave), base=ZT[t];
@@ -1039,8 +1089,8 @@ function changeZone(dx,dy){
   G.zone.cx+=dx; G.zone.cy+=dy;
   groundSeed=zoneSeed(G.zone.cx,G.zone.cy); prerenderGround();
   // reappear on the opposite edge so you keep moving forward into the new zone
-  if(dx>0)p.x=p.r+8; else if(dx<0)p.x=W-p.r-8;
-  if(dy>0)p.y=p.r+8; else if(dy<0)p.y=H-p.r-8;
+  if(dx>0)p.x=p.r+8; else if(dx<0)p.x=VW-p.r-8;
+  if(dy>0)p.y=p.r+8; else if(dy<0)p.y=VH-p.r-8;
   for(const z of G.zombies) placeAtEdge(z);          // zombies re-enter from the edges
   // transient effects belong to the old zone — clear them
   G.bullets.length=0; G.casings.length=0; G.smoke.length=0; G.blood.length=0; G.parts.length=0; G.pools.length=0;
@@ -1054,10 +1104,10 @@ function changeZone(dx,dy){
 function handleEdges(){
   const p=G.player; let moved=false;
   if(p.x<p.r){ if(G.zone.cx>0){changeZone(-1,0);moved=true;} else p.x=p.r; }
-  else if(p.x>W-p.r){ if(G.zone.cx<GW-1){changeZone(1,0);moved=true;} else p.x=W-p.r; }
+  else if(p.x>VW-p.r){ if(G.zone.cx<GW-1){changeZone(1,0);moved=true;} else p.x=VW-p.r; }
   if(!moved){
     if(p.y<p.r){ if(G.zone.cy>0)changeZone(0,-1); else p.y=p.r; }
-    else if(p.y>H-p.r){ if(G.zone.cy<GH-1)changeZone(0,1); else p.y=H-p.r; }
+    else if(p.y>VH-p.r){ if(G.zone.cy<GH-1)changeZone(0,1); else p.y=VH-p.r; }
   }
 }
 
@@ -1491,7 +1541,7 @@ function update(dt){
   // bullets
   for(let i=G.bullets.length-1;i>=0;i--){
     const b=G.bullets[i]; b.x+=b.vx*dt; b.y+=b.vy*dt; b.life-=dt;
-    if(b.life<=0||b.x<-30||b.x>W+30||b.y<-30||b.y>H+30){ G.bullets.splice(i,1); continue; }
+    if(b.life<=0||b.x<-30||b.x>VW+30||b.y<-30||b.y>VH+30){ G.bullets.splice(i,1); continue; }
     for(const z of G.zombies){
       if(b.hit&&b.hit.has(z)) continue;
       if(dist2(b.x,b.y,z.x,z.y)<(z.r+4)**2){
@@ -1631,8 +1681,9 @@ function render(){
   ctx.save();
   const sh=(SETTINGS.shake&&G&&G.shake>0)?G.shake:0;
   if(sh){ ctx.translate(rand(-sh,sh),rand(-sh,sh)); }
+  ctx.scale(VIEW,VIEW);   // world is drawn in virtual (VW×VH) coords, scaled to fill the screen
   // textured ground
-  ctx.drawImage(groundCv,0,0,W,H);
+  ctx.drawImage(groundCv,0,0,VW,VH);
   if(G){
     // persistent blood pools on the ground
     for(const q of G.pools){ ctx.globalAlpha=q.a; ctx.fillStyle=q.c; ctx.beginPath(); ctx.ellipse(q.x,q.y,q.r,q.r*0.72,q.x*0.3,0,TAU); ctx.fill(); }
@@ -1685,9 +1736,10 @@ function render(){
   // ---- DYNAMIC LIGHTING (night + flashlight) ----
   if(G){
     const p=G.player;
+    lctx.setTransform(RSCALE*VIEW,0,0,RSCALE*VIEW,0,0);   // lighting renders in world coords too
     lctx.globalCompositeOperation='source-over';
-    lctx.clearRect(0,0,W,H);
-    lctx.fillStyle='rgba(6,8,13,0.84)'; lctx.fillRect(0,0,W,H);
+    lctx.clearRect(0,0,VW,VH);
+    lctx.fillStyle='rgba(6,8,13,0.84)'; lctx.fillRect(0,0,VW,VH);
     lctx.globalCompositeOperation='destination-out';
     // ambient halo around player (cached light texture instead of a per-frame gradient)
     glowAt(lctx,lightTex,p.x,p.y,160,0.85);
@@ -1709,7 +1761,7 @@ function render(){
     ctx.drawImage(lightCv,0,0,W,H);
 
     // ---- additive glows on top of darkness ----
-    ctx.save(); ctx.globalCompositeOperation='lighter';
+    ctx.save(); ctx.scale(VIEW,VIEW); ctx.globalCompositeOperation='lighter';
     if(G.muzzle>0){ const mx=p.x+Math.cos(p.ang)*26,my=p.y+Math.sin(p.ang)*26,k=G.muzzle/6;
       glowAt(ctx,muzzleGlow,mx,my,70*k,1); }
     for(const b of G.bullets) glowAt(ctx,bulletGlow[b.color]||lightTex,b.x,b.y,16,0.5);
@@ -1726,13 +1778,14 @@ function render(){
 
   // popups (UI, above lighting)
   if(G){
-    ctx.save(); if(sh) ctx.translate(rand(-sh,sh),rand(-sh,sh));
+    ctx.save(); if(sh) ctx.translate(rand(-sh,sh),rand(-sh,sh)); ctx.scale(VIEW,VIEW);
     ctx.textAlign='center'; ctx.font='bold 15px Segoe UI'; ctx.shadowColor='#000'; ctx.shadowBlur=4;
     for(const q of G.pops){ ctx.globalAlpha=clamp(q.life/50,0,1); ctx.fillStyle=q.c; ctx.fillText(q.txt,q.x,q.y); }
-    ctx.restore(); ctx.globalAlpha=1;
+    ctx.shadowBlur=0;
     // zombie hp bars (above lighting so always readable)
     for(const z of G.zombies){ if(z.hp<z.maxhp){ const w=z.r*2; ctx.fillStyle='rgba(40,0,0,.8)'; ctx.fillRect(z.x-w/2,z.y-z.r-12,w,4);
       ctx.fillStyle=z.hp/z.maxhp>.4?'#3cdc3c':'#ff5050'; ctx.fillRect(z.x-w/2,z.y-z.r-12,w*clamp(z.hp/z.maxhp,0,1),4); } }
+    ctx.restore(); ctx.globalAlpha=1;
   }
 
   // vignette (cached, rebuilt only on resize) + low-hp pulse
