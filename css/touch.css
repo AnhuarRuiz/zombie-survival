@@ -1,0 +1,48 @@
+/* ---- touch/desktop hint toggling ---- */
+.touchHint { display:none; }
+body.touch .keys { display:none !important; }
+body.touch .touchHint { display:block !important; }
+
+/* ---- touch controls container ---- */
+#touchControls { position:absolute; inset:0; z-index:7; pointer-events:none; }
+#touchControls.hidden { display:none !important; }
+
+/* ---- twin sticks ---- */
+.stick {
+  position:absolute; width:calc(var(--stick-r)*2); height:calc(var(--stick-r)*2); border-radius:50%;
+  pointer-events:none; display:flex; align-items:center; justify-content:center;
+  bottom:calc(24px*var(--ui) + env(safe-area-inset-bottom));
+  background:radial-gradient(circle, rgba(42,20,18,.42), rgba(12,6,6,.28));
+  border:2px solid rgba(180,90,80,.42); box-shadow:inset 0 0 18px rgba(0,0,0,.35);
+}
+#stickMove { left:calc(22px*var(--ui) + env(safe-area-inset-left)); }
+#stickAim  { right:calc(22px*var(--ui) + env(safe-area-inset-right)); }
+.stick.aim { background:radial-gradient(circle, rgba(80,18,18,.46), rgba(22,6,6,.32)); border-color:rgba(255,70,60,.55); }
+.stick > i {
+  display:block; width:calc(var(--stick-r)*0.82); height:calc(var(--stick-r)*0.82); border-radius:50%;
+  background:radial-gradient(circle at 38% 32%, rgba(228,190,180,.92), rgba(150,90,82,.6));
+  box-shadow:0 2px 8px rgba(0,0,0,.45); transition:transform .04s linear;
+}
+.stick.aim > i { background:radial-gradient(circle at 38% 32%, rgba(255,110,100,.95), rgba(200,40,40,.65)); }
+
+/* ---- dodge / reload / nade / swap buttons (centre-bottom) ---- */
+#actionBtns { position:absolute; left:50%; transform:translateX(-50%); bottom:calc(22px*var(--ui) + env(safe-area-inset-bottom)); display:flex; align-items:center; gap:calc(16px*var(--ui)); }
+.abtn {
+  pointer-events:auto; width:calc(54px*var(--ui)); height:calc(54px*var(--ui)); border-radius:50%; font-size:calc(23px*var(--ui)); font-weight:800;
+  background:rgba(30,12,12,.52); border:1px solid rgba(200,80,70,.5); color:#ffe0da;
+  display:flex; align-items:center; justify-content:center; backdrop-filter:blur(2px);
+  user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent;
+}
+.abtn:active { background:rgba(226,59,59,.5); color:#fff; transform:scale(.94); }
+.abtn.dodge { width:calc(72px*var(--ui)); height:calc(72px*var(--ui)); font-size:calc(30px*var(--ui)); border-color:rgba(90,200,255,.55); }
+.abtn.dodge:active { background:rgba(90,200,255,.45); }
+
+/* ---- weapon slot buttons (above right stick) ---- */
+#weaponBtns { position:absolute; right:calc(18px*var(--ui) + env(safe-area-inset-right)); bottom:calc(var(--stick-r)*2 + 42px*var(--ui) + env(safe-area-inset-bottom)); display:flex; flex-direction:column; align-items:flex-end; gap:calc(7px*var(--ui)); }
+.wbtn {
+  pointer-events:auto; min-width:calc(50px*var(--ui)); height:calc(38px*var(--ui)); padding:calc(3px*var(--ui)) calc(7px*var(--ui)); border-radius:calc(9px*var(--ui)); font-size:calc(11px*var(--ui)); font-weight:800;
+  background:rgba(30,12,12,.52); border:1px solid rgba(200,80,70,.42); color:#ffe0da; line-height:1.05;
+  display:flex; align-items:center; justify-content:center; text-align:center; backdrop-filter:blur(2px);
+  user-select:none; -webkit-user-select:none; touch-action:none; border-bottom-width:3px;
+}
+.wbtn.active { background:rgba(226,59,59,.34); border-color:var(--accent-bright); color:#fff; }

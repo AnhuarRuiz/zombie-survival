@@ -1,0 +1,67 @@
+/* ---- mobile pause button (top-right, clear of wave counter) ---- */
+#pauseBtn { position:absolute; z-index:6; top:calc(10px*var(--ui) + env(safe-area-inset-top)); right:calc(12px*var(--ui) + env(safe-area-inset-right));
+  width:calc(42px*var(--ui)); height:calc(42px*var(--ui)); border-radius:50%; display:none; align-items:center; justify-content:center;
+  font-size:calc(13px*var(--ui)); font-weight:900; letter-spacing:1px; color:#ffe0da; background:rgba(30,12,12,.6);
+  border:1px solid rgba(200,80,70,.5); backdrop-filter:blur(3px); box-shadow:0 3px 12px rgba(0,0,0,.45);
+  user-select:none; -webkit-user-select:none; touch-action:none; -webkit-tap-highlight-color:transparent; }
+body.touch #pauseBtn { display:flex; }
+#pauseBtn.hidden { display:none !important; }
+#pauseBtn:active { background:rgba(226,59,59,.5); color:#fff; transform:scale(.92); }
+
+/* ---- HP bar ---- */
+#hud { position:absolute; top:calc(12px*var(--ui)); left:calc(12px*var(--ui)); right:calc(12px*var(--ui)); z-index:5; pointer-events:none; display:flex; }
+#hudTop { display:flex; flex-direction:column; gap:calc(7px*var(--ui)); }
+#hpBarWrap { position:relative; width:calc(190px*var(--ui)); height:calc(17px*var(--ui)); background:rgba(8,12,6,.5);
+  border:1px solid rgba(255,90,90,.28); border-radius:calc(10px*var(--ui)); overflow:hidden; backdrop-filter:blur(3px); }
+#hpbar { position:absolute; inset:0; width:100%; background:linear-gradient(90deg,#ff7a5e,#ff2e2e); transition:width .18s; }
+#hptext { position:absolute; inset:0; display:flex; align-items:center; gap:calc(5px*var(--ui)); padding-left:calc(9px*var(--ui));
+  font-size:calc(11px*var(--ui)); font-weight:800; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.7); letter-spacing:.5px; }
+
+/* ---- stat chips ---- */
+#statChips { display:flex; gap:calc(6px*var(--ui)); flex-wrap:wrap; }
+.chip { display:flex; align-items:center; gap:calc(4px*var(--ui)); background:rgba(16,6,6,.5); border:1px solid rgba(200,70,70,.26);
+  border-radius:calc(20px*var(--ui)); padding:calc(3px*var(--ui)) calc(10px*var(--ui)); font-size:calc(12px*var(--ui)); font-weight:800;
+  backdrop-filter:blur(3px); white-space:nowrap; line-height:1; }
+.chip .ci { font-size:calc(12px*var(--ui)); opacity:.92; }
+.chip b { color:#ffe7e2; }
+.chip.gold b { color:var(--gold); }
+
+/* ---- grenade selector ---- */
+#nadeChips { display:flex; gap:calc(6px*var(--ui)); flex-wrap:wrap; }
+.nchip { pointer-events:auto; display:flex; align-items:center; gap:calc(4px*var(--ui)); cursor:pointer;
+  background:rgba(16,6,6,.5); border:1px solid rgba(200,70,70,.26); border-radius:calc(20px*var(--ui));
+  padding:calc(3px*var(--ui)) calc(9px*var(--ui)); font-size:calc(12px*var(--ui)); font-weight:800; color:#ffe7e2;
+  backdrop-filter:blur(3px); white-space:nowrap; line-height:1; user-select:none; -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent; touch-action:none; }
+.nchip .ni { font-size:calc(13px*var(--ui)); }
+.nchip.active { border-color:var(--accent-bright); background:rgba(226,59,59,.30); box-shadow:0 0 8px rgba(226,59,59,.4); }
+.nchip.empty { opacity:.42; }
+
+/* ---- weapon widget (Free Fire style, bottom-right) ---- */
+#weaponHUD { position:absolute; z-index:5; pointer-events:none;
+  right:calc(12px*var(--ui) + env(safe-area-inset-right)); bottom:calc(14px*var(--ui) + env(safe-area-inset-bottom));
+  width:calc(112px*var(--ui)); padding:calc(5px*var(--ui)) calc(8px*var(--ui)) calc(6px*var(--ui));
+  background:linear-gradient(180deg,rgba(22,10,10,.62),rgba(8,4,4,.82)); border:1px solid rgba(200,70,70,.24);
+  border-radius:calc(9px*var(--ui)); backdrop-filter:blur(4px); box-shadow:0 4px 14px rgba(0,0,0,.42);
+  display:flex; flex-direction:column; gap:calc(3px*var(--ui)); }
+#weaponHUD::before { content:""; position:absolute; left:0; top:calc(7px*var(--ui)); bottom:calc(7px*var(--ui)); width:2px;
+  border-radius:3px; background:var(--wcol,#7CFC00); box-shadow:0 0 7px var(--wcol,#7CFC00); }
+#whTop { display:flex; align-items:center; justify-content:space-between; gap:calc(5px*var(--ui)); }
+#wIcon { width:calc(54px*var(--ui)); height:calc(20px*var(--ui)); filter:drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+#whAmmo { display:flex; align-items:baseline; gap:calc(2px*var(--ui)); font-variant-numeric:tabular-nums; }
+#ammoCur { font-size:calc(18px*var(--ui)); font-weight:900; color:#fff; line-height:1; text-shadow:0 1px 3px rgba(0,0,0,.6); }
+#ammoMag { font-size:calc(9px*var(--ui)); font-weight:800; color:rgba(220,235,210,.55); }
+#whBottom { display:flex; align-items:center; justify-content:space-between; gap:calc(5px*var(--ui)); height:calc(10px*var(--ui)); }
+#whName { font-size:calc(8px*var(--ui)); font-weight:800; letter-spacing:.5px; color:#ffe0da; text-transform:uppercase; opacity:.9; }
+#whReload { position:relative; flex:1; height:calc(5px*var(--ui)); border-radius:4px; overflow:hidden;
+  background:rgba(90,160,210,.16); display:flex; align-items:center; justify-content:center; }
+#whReload.hidden { display:none !important; }
+#whReload i { position:absolute; left:0; top:0; bottom:0; width:0; background:linear-gradient(90deg,#5ec8ff,#22a0ff); }
+#whReload span { position:relative; font-size:calc(6px*var(--ui)); font-weight:800; letter-spacing:.5px; color:#eaf7ff; }
+/* on touch: move below pause button */
+body.touch #weaponHUD { bottom:auto; top:calc(60px*var(--ui)); }
+
+/* ---- wave/zone message ---- */
+#msg { position:absolute; top:64px; left:0; right:0; text-align:center; z-index:6; font-size:clamp(14px,2.4vw,22px); font-weight:800;
+  color:var(--gold); text-shadow:0 0 12px rgba(0,0,0,.8); pointer-events:none; opacity:0; transition:opacity .3s; letter-spacing:1px; }
+#msg.show { opacity:1; }

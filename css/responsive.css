@@ -1,0 +1,73 @@
+/* ---- small keyboards (hide key hints) ---- */
+@media (max-width:600px) { .key { display:none; } }
+
+/* ---- compact menus: phones + short landscape viewports ---- */
+@media (max-width:760px), (max-height:540px) {
+  .overlay { gap:12px; padding:16px; }
+  h1 { font-size:clamp(26px,6vw,46px); }
+  h2 { font-size:clamp(18px,4.4vw,26px); }
+  p.sub { font-size:13px; line-height:1.4; }
+  .btn { padding:11px 24px; font-size:16px; }
+  .btn.small { padding:9px 18px; font-size:14px; }
+  #start.menu { padding:20px clamp(20px,6vw,80px); }
+  .brand .tag { letter-spacing:2px; font-size:10px; }
+  .menuWrap { gap:18px; }
+  .menuBtns { gap:10px; }
+  .mbtn { padding:12px 16px; font-size:16px; }
+  .mbtn .ic { font-size:18px; width:22px; }
+  .menuHint { font-size:11px; }
+  .card { padding:10px; gap:4px; }
+  .card .t { font-size:14px; }
+  .card .d { font-size:12px; }
+  .card .c { font-size:13px; }
+  .slot { min-width:138px; padding:10px 14px; }
+  .slot canvas { width:104px; height:40px; }
+  .slot .emoji { font-size:28px; line-height:40px; }
+  .catBtn { padding:18px 12px; }
+  .catBtn .ic { font-size:32px; }
+  #shopView { gap:10px; max-width:760px; }
+  .shopGrid { grid-template-columns:repeat(auto-fit,minmax(146px,1fr)); gap:8px; }
+  .wcard canvas { width:96px; height:36px; margin:0 auto; }
+  .wcard .stats { font-size:11px; gap:1px; }
+  .wcard .note { display:none; }
+  .tab { font-size:12px; padding:9px 6px; }
+  .tab .ic { font-size:15px; }
+  .shopHead h2 { font-size:20px; }
+  .shopCoins { font-size:16px; padding:6px 12px; }
+  .loadMini { font-size:12px; }
+  .setRow { padding:11px 14px; font-size:14px; }
+  .credit { font-size:11px; }
+}
+
+/* ---- shop fit-to-screen: desktop / laptop (short height) ---- */
+@media (min-width:761px) and (max-height:860px) {
+  #shopView { gap:10px; }
+  .shopGrid { grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }
+  .card { padding:11px; gap:4px; }
+  .card .t { font-size:15px; }
+  .wcard canvas { width:118px; height:44px; margin:0 auto; }
+  .wcard .stats { font-size:11.5px; gap:1px; }
+  .wcard .note { display:none; }
+  .shopHead h2 { font-size:22px; }
+  .tab { padding:10px 6px; }
+  .slot { min-width:140px; padding:10px 14px; }
+  .slot canvas { width:108px; height:42px; }
+}
+
+@media (min-width:761px) and (max-height:680px) {
+  #shopView { gap:8px; }
+  .shopGrid { grid-template-columns:repeat(auto-fit,minmax(146px,1fr)); gap:8px; }
+  .wcard canvas { width:100px; height:38px; }
+  .wcard .stats { font-size:11px; }
+  .shopHead h2 { font-size:20px; }
+  .tab { font-size:13px; padding:9px 6px; }
+}
+
+/* ---- very short landscape phones ---- */
+@media (max-height:430px) {
+  .overlay { gap:9px; padding:12px; }
+  h1 { font-size:clamp(22px,5.4vh,38px); }
+  .menuWrap { gap:12px; }
+  .mbtn { padding:10px 14px; }
+  .btn { padding:9px 20px; }
+}

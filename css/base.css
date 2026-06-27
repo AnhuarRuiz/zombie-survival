@@ -1,0 +1,12 @@
+:root {
+  --accent:#e23b3b; --accent-bright:#ff5a4f; --accent-dim:#7a1414;
+  --danger:#ff3b3b; --gold:#ffcf33; --ui:1; --stick-r:54px;
+  --panel:#160a0a; --panel-bd:#4a1a1a; --ink:#ffd9d4;
+}
+* { box-sizing:border-box; margin:0; padding:0;
+  -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none;
+  -webkit-touch-callout:none; }
+html,body { height:100%; background:#080404; overflow:hidden; font-family:"Segoe UI",system-ui,sans-serif; color:#f0dcd8; overscroll-behavior:none; -webkit-tap-highlight-color:transparent; }
+#game { display:block; position:absolute; inset:0; margin:auto; background:#0f0808; touch-action:none; cursor:crosshair; }
+.hidden { display:none !important; }
+.credit { font-size:12px; opacity:.5; position:absolute; bottom:10px; }
