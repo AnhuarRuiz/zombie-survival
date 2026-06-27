@@ -722,16 +722,63 @@ function noise(dur,o={}){
 }
 // blip simple compatible con las llamadas en línea existentes.
 function blip(freq,dur,type='square',vol=.12,slideTo=null){ tone(freq,dur,{type,vol,to:slideTo}); }
+// Micro-variación de tono entre disparos: evita que el fuego automático suene "robótico".
+const jit=(p=1)=>1+rand(-.045,.045)*p;
 const SFX={
-  // --- armas de fuego: cuerpo tonal + chasquido de ruido para dar pegada ---
-  pistol:()=>{ tone(640,.06,{type:'square',vol:.10,to:150}); noise(.05,{vol:.11,cutoff:2600,cutoffTo:600,curve:2}); },
-  smg:()=>{ tone(560,.045,{type:'square',vol:.07,to:190}); noise(.035,{vol:.06,cutoff:3000,cutoffTo:900,curve:2}); },
-  shotgun:()=>{ noise(.22,{vol:.32,cutoff:1900,cutoffTo:180,curve:1.4,q:1}); tone(120,.22,{type:'sawtooth',vol:.16,to:46}); tone(68,.26,{type:'sine',vol:.18,to:34}); },
-  rifle:()=>{ tone(880,.05,{type:'sawtooth',vol:.13,to:170}); noise(.12,{vol:.19,cutoff:3600,cutoffTo:380,curve:1.6,q:1.2}); tone(140,.14,{type:'sine',vol:.12,to:48}); },
-  assault:()=>{ tone(700,.05,{type:'square',vol:.10,to:200}); noise(.06,{vol:.13,cutoff:3200,cutoffTo:700,curve:2,q:1}); tone(150,.07,{type:'sine',vol:.08,to:60}); },
-  magnum:()=>{ noise(.16,{vol:.26,cutoff:2600,cutoffTo:260,curve:1.5,q:1}); tone(180,.18,{type:'sawtooth',vol:.18,to:50}); tone(90,.2,{type:'sine',vol:.16,to:38}); },
-  lmg:()=>{ tone(520,.05,{type:'square',vol:.09,to:160}); noise(.06,{vol:.14,cutoff:2400,cutoffTo:500,curve:1.8,q:1}); tone(110,.08,{type:'sine',vol:.10,to:44}); },
-  sniper:()=>{ noise(.2,{vol:.3,cutoff:4200,cutoffTo:200,curve:1.4,q:1.4}); tone(260,.2,{type:'sawtooth',vol:.18,to:54}); tone(80,.26,{type:'sine',vol:.18,to:32}); },
+  // --- ARMAS DE FUEGO ---
+  // Cada disparo se construye por capas para que suene a arma real y reconocible:
+  //   1) chasquido: transitorio agudo muy corto (ruido highpass) = el "tac" inicial.
+  //   2) cuerpo:    ráfaga de ruido con barrido del filtro = el fogonazo/estampido.
+  //   3) golpe:     tono grave que cae rápido = la pegada que "se siente" en el pecho.
+  //   4) cola:      ruido grave largo y retrasado = el eco/reverberación (solo armas grandes).
+  pistol:()=>{ const j=jit();
+    noise(.008,{vol:.11,type:'highpass',cutoff:5200});
+    noise(.07,{vol:.20,cutoff:2400*j,cutoffTo:420,curve:1.8,q:.8});
+    tone(220*j,.08,{type:'square',vol:.10,to:90});
+  },
+  smg:()=>{ const j=jit();                                    // ligero, agudo y muy rápido
+    noise(.006,{vol:.10,type:'highpass',cutoff:6400});
+    noise(.05,{vol:.16,cutoff:3400*j,cutoffTo:800,curve:2,q:1});
+    tone(240*j,.05,{type:'square',vol:.07,to:120});
+  },
+  shotgun:()=>{                                               // estruendo ancho y grave
+    noise(.012,{vol:.16,type:'highpass',cutoff:4200});
+    noise(.26,{vol:.40,cutoff:2200,cutoffTo:140,curve:1.3,q:.7});
+    tone(110,.24,{type:'sawtooth',vol:.20,to:40});
+    tone(60,.30,{type:'sine',vol:.22,to:28});
+    noise(.30,{vol:.12,cutoff:900,cutoffTo:200,curve:1.2,delay:.05});
+  },
+  assault:()=>{ const j=jit();                                // crack militar, seco y punzante
+    noise(.008,{vol:.13,type:'highpass',cutoff:6000});
+    noise(.075,{vol:.22,cutoff:3000*j,cutoffTo:520,curve:1.8,q:1});
+    tone(180*j,.08,{type:'square',vol:.10,to:64});
+  },
+  magnum:()=>{ const j=jit();                                 // revólver: detonación grave y rotunda
+    noise(.012,{vol:.18,type:'highpass',cutoff:5600});
+    noise(.18,{vol:.34,cutoff:2800*j,cutoffTo:220,curve:1.4,q:.9});
+    tone(170*j,.2,{type:'sawtooth',vol:.22,to:46});
+    tone(80,.26,{type:'sine',vol:.22,to:34});
+    noise(.22,{vol:.10,cutoff:800,cutoffTo:160,curve:1.2,delay:.04});
+  },
+  rifle:()=>{ const j=jit();                                  // crack agudo de alta velocidad + cola
+    noise(.01,{vol:.20,type:'highpass',cutoff:7000});
+    noise(.13,{vol:.26,type:'bandpass',cutoff:3200*j,cutoffTo:600,q:1.2,curve:1.6});
+    tone(180*j,.14,{type:'sawtooth',vol:.14,to:54});
+    noise(.18,{vol:.10,cutoff:1100,cutoffTo:240,curve:1.2,delay:.04});
+  },
+  lmg:()=>{ const j=jit();                                    // ametralladora: pesada y mecánica
+    noise(.009,{vol:.13,type:'highpass',cutoff:5000});
+    noise(.085,{vol:.24,cutoff:2400*j,cutoffTo:420,curve:1.6,q:.9});
+    tone(140*j,.1,{type:'sawtooth',vol:.13,to:50});
+    tone(70,.12,{type:'sine',vol:.10,to:34});
+  },
+  sniper:()=>{                                                // estampido supersónico + eco largo
+    noise(.012,{vol:.24,type:'highpass',cutoff:8000});
+    noise(.22,{vol:.34,cutoff:3600,cutoffTo:180,curve:1.4,q:1.2});
+    tone(220,.2,{type:'sawtooth',vol:.18,to:52});
+    tone(70,.3,{type:'sine',vol:.22,to:28});
+    noise(.34,{vol:.14,cutoff:1000,cutoffTo:150,curve:1.1,delay:.06});
+  },
   // --- impactos / muerte ---
   hit:()=>{ noise(.05,{vol:.11,cutoff:2200,cutoffTo:700,curve:2}); tone(200,.05,{type:'square',vol:.05,to:110}); },
   zdeath:()=>{ noise(.18,{vol:.16,cutoff:1500,cutoffTo:200,curve:1.5}); tone(150,.2,{type:'sawtooth',vol:.12,to:40,filter:'lowpass',cutoff:900}); },
